@@ -1,39 +1,22 @@
-use std::collections::HashMap;
-
-#[derive(PartialEq)]
-pub enum AppState {
+#[derive(Clone, Debug, PartialEq)]
+pub enum AppMode {
     Initializing,
-    EditingParticipants(Vec<Participant>),
-    RunningCombat(HashMap<String, Participant>),
+    Running(RunMode),
     Quitting,
 }
 
-impl AppState {
+impl AppMode {
     pub fn new() -> Self {
-        AppState::Initializing
-    }
-
-    // NOTE - Revisit removing this entirely
-    pub fn transition(&mut self) {
-        *self = match self {
-            AppState::Initializing => {
-                AppState::EditingParticipants(Vec::new())
-            },
-            AppState::EditingParticipants(participants) => {
-                // Collect participants into a map
-                let combatants: HashMap<String, Participant> = participants.iter().fold(HashMap::new(), |mut acc, item| {
-                    acc.insert(item.name.clone(), item.clone());
-                    acc
-                });
-                AppState::RunningCombat(combatants)
-            },
-            AppState::RunningCombat(_) => AppState::Quitting,
-            AppState::Quitting => AppState::Quitting,
-        }
+        AppMode::Initializing
     }
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum RunMode {
+    EditingEncounter,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Participant {
     name: String,
     hp_max: u16,
