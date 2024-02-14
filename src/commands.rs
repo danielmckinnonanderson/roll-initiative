@@ -1,6 +1,6 @@
 use crossterm::event::KeyCode;
 
-use crate::app::AppMode;
+use crate::app::{AppMode, RunMode};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AppCommand {
@@ -16,41 +16,39 @@ pub type StateInducer = fn (AppMode) -> AppMode;
 /// This block is the key mappings for the various 'modes' of the app.
 impl From<(&AppMode, Option<KeyCode>)> for AppCommand {
     fn from(value: (&AppMode, Option<KeyCode>)) -> Self {
-        match value.0 {
-            // There are no commands in the initializing state.
-            AppMode::Initializing => AppCommand::NoOp,
+        value.1.and_then(|key| {
+            Some(match value.0 {
+                // There are no commands in the initializing or quitting states
+                AppMode::Initializing | AppMode::Quitting => AppCommand::NoOp,
 
-            AppMode::Running(_run_mode) => {
-                // TODO - Edit this to match over run mode first. For now what we have is fine
-                match value.1 {
-                    Some(key) => match key {
-                        // TODO - Vim motions for movement
+                AppMode::Running(run_mode) => match run_mode {
+                    RunMode::EditingEncounter => match key {
+                        // Vim movement
                         KeyCode::Char('j') => AppCommand::NoOp,
                         KeyCode::Char('k') => AppCommand::NoOp,
                         KeyCode::Char('h') => AppCommand::NoOp,
                         KeyCode::Char('l') => AppCommand::NoOp,
 
-                        // Edit a particpant row 
-                        KeyCode::Enter | KeyCode::Char('e') => AppCommand::NoOp,
+                        // Edit the current participant row
+                        | KeyCode::Enter
+                        | KeyCode::Char('e') => AppCommand::NoOp,
 
-                        // Add a participant row
+                        // Add a new participant row
                         KeyCode::Char('a') => AppCommand::NoOp,
 
-                        // Remove a participant row
-                        KeyCode::Char('d') | KeyCode::Backspace | KeyCode::Delete
-                            => AppCommand::NoOp,
+                        // Remove the current participant row
+                        | KeyCode::Char('d')
+                        | KeyCode::Backspace
+                        | KeyCode::Delete => AppCommand::NoOp,
 
                         // Quit the app
                         KeyCode::Char('q') => AppCommand::Quit,
 
                         _ => AppCommand::NoOp,
-                    },
-                    None => AppCommand::NoOp,
-                }
-            },
-            // There are no commands in the quitting state.
-            AppMode::Quitting => AppCommand::NoOp,
-        }
+                    }
+                },
+            })
+        }).unwrap_or(AppCommand::NoOp)
     }
 }
 
