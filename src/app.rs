@@ -1,17 +1,18 @@
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
+#[derive(Default)]
 pub enum AppMode {
+    #[default]
     Initializing,
     Running(RunMode),
     Quitting,
 }
 
 impl AppMode {
-    pub fn new() -> Self {
-        AppMode::Initializing
-    }
 }
+
+
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum RunMode {

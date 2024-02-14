@@ -1,8 +1,4 @@
-use std::{
-    default,
-    io::Stderr,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
 use app::AppMode;
@@ -18,14 +14,14 @@ pub const FRAMES_PER_SECOND: u64 = 24;
 
 lazy_static! {
     pub static ref FRAME_WAIT_DURATION: Duration = {
-        let frame_wait_millis: u64 = (1000 / (FRAMES_PER_SECOND * 1000)).into();
+        let frame_wait_millis: u64 = 1000 / (FRAMES_PER_SECOND * 1000);
         Duration::from_millis(frame_wait_millis)
     };
 }
 
 fn main() -> Result<()> {
     // Define application state
-    let mut mode = AppMode::new();
+    let mut mode = AppMode::default();
 
     // Enable raw mode
     crossterm::terminal::enable_raw_mode().context("Failed to enable raw mode.")?;
@@ -60,7 +56,7 @@ fn main() -> Result<()> {
                 let command: AppCommand = (&mode, key_opt).into();
 
                 // If the pressed key corresponds to a command, run command against state.
-                mode = StateInducer::from(command)(mode);
+                StateInducer::from(command)((&mut mode, None));
 
                 // TODO - Other stuff while running.
             }

@@ -1,6 +1,6 @@
 use crossterm::event::KeyCode;
 
-use crate::app::{AppMode, RunMode};
+use crate::app::{AppMode, RunMode, AppState};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AppCommand {
@@ -8,27 +8,31 @@ pub enum AppCommand {
     NoOp,
 }
 
-// FIXME - Update this type & related funcs to reflect operations on
-//         an a State struct AND mode, instead of just changing the mode.
 /// Given the current AppState, induce action and return the resulting AppState.
-pub type StateInducer = fn(AppMode) -> AppMode;
+pub type StateInducer = fn((&mut AppMode, Option<&mut AppState>));
 
 /// This block is the key mappings for the various 'modes' of the app.
 #[rustfmt::skip]
 impl From<(&AppMode, Option<KeyCode>)> for AppCommand {
     fn from(value: (&AppMode, Option<KeyCode>)) -> Self {
-        value.1.and_then(|key| {
-            Some(match value.0 {
+        value.1.map(|key| match value.0 {
                 // There are no commands in the initializing or quitting states
                 AppMode::Initializing | AppMode::Quitting => AppCommand::NoOp,
 
                 AppMode::Running(run_mode) => match run_mode {
                     RunMode::EditingEncounter => match key {
-                        // Vim movement
-                        KeyCode::Char('j') => AppCommand::NoOp,
-                        KeyCode::Char('k') => AppCommand::NoOp,
-                        KeyCode::Char('h') => AppCommand::NoOp,
-                        KeyCode::Char('l') => AppCommand::NoOp,
+                        // Vim & arrow key movement
+                        | KeyCode::Char('j') 
+                        | KeyCode::Down => AppCommand::NoOp,
+
+                        | KeyCode::Char('k')
+                        | KeyCode::Up => AppCommand::NoOp,
+
+                        | KeyCode::Char('h')
+                        | KeyCode::Left => AppCommand::NoOp,
+
+                        | KeyCode::Char('l')
+                        | KeyCode::Right => AppCommand::NoOp,
 
                         // Edit the current participant row
                         | KeyCode::Enter
@@ -48,16 +52,22 @@ impl From<(&AppMode, Option<KeyCode>)> for AppCommand {
                         _ => AppCommand::NoOp,
                     }
                 },
-            })
-        }).unwrap_or(AppCommand::NoOp)
+            }).unwrap_or(AppCommand::NoOp)
     }
 }
 
 impl From<AppCommand> for StateInducer {
     fn from(value: AppCommand) -> Self {
         match value {
-            AppCommand::Quit => |_state: AppMode| AppMode::Quitting,
-            AppCommand::NoOp => |state: AppMode| state.clone(),
+            AppCommand::Quit => {
+                |value: (&mut AppMode, Option<&mut AppState>)| {
+                    *value.0 = AppMode::Quitting;
+                }
+            }
+            AppCommand::NoOp => {
+                // Do nothing
+                |_value: (&mut AppMode, Option<&mut AppState>)| {}
+            }
         }
     }
 }
