@@ -20,7 +20,7 @@ pub enum RunMode {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct AppState {
-    participants: HashMap<String, Participant>
+    participants: HashMap<String, Participant>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -32,7 +32,12 @@ pub struct Participant {
 }
 
 impl Participant {
-    pub fn new(name: String, hp_current: u16, hp_max: u16, initiative_rolls: [Option<u8>; 8]) -> Self {
+    pub fn new(
+        name: String,
+        hp_current: u16,
+        hp_max: u16,
+        initiative_rolls: [Option<u8>; 8],
+    ) -> Self {
         Participant {
             name,
             hp_max,

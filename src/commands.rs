@@ -5,15 +5,16 @@ use crate::app::{AppMode, RunMode};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AppCommand {
     Quit,
-    NoOp
+    NoOp,
 }
 
 // FIXME - Update this type & related funcs to reflect operations on
 //         an a State struct AND mode, instead of just changing the mode.
 /// Given the current AppState, induce action and return the resulting AppState.
-pub type StateInducer = fn (AppMode) -> AppMode;
+pub type StateInducer = fn(AppMode) -> AppMode;
 
 /// This block is the key mappings for the various 'modes' of the app.
+#[rustfmt::skip]
 impl From<(&AppMode, Option<KeyCode>)> for AppCommand {
     fn from(value: (&AppMode, Option<KeyCode>)) -> Self {
         value.1.and_then(|key| {
@@ -55,14 +56,8 @@ impl From<(&AppMode, Option<KeyCode>)> for AppCommand {
 impl From<AppCommand> for StateInducer {
     fn from(value: AppCommand) -> Self {
         match value {
-            AppCommand::Quit => {
-                |_state: AppMode| AppMode::Quitting
-            },
-            AppCommand::NoOp => {
-                |state: AppMode| state.clone()
-            },
+            AppCommand::Quit => |_state: AppMode| AppMode::Quitting,
+            AppCommand::NoOp => |state: AppMode| state.clone(),
         }
     }
 }
-
-

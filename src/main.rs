@@ -1,11 +1,15 @@
-use std::{time::{ Duration, Instant }, default, io::Stderr};
+use std::{
+    default,
+    io::Stderr,
+    time::{Duration, Instant},
+};
 
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use app::AppMode;
 use commands::{AppCommand, StateInducer};
-use crossterm::event::{KeyCode, Event, KeyEventKind};
+use crossterm::event::{Event, KeyCode, KeyEventKind};
 use lazy_static::lazy_static;
-use ratatui::{Terminal, prelude::CrosstermBackend, Frame, widgets::Block};
+use ratatui::{prelude::CrosstermBackend, widgets::Block, Frame, Terminal};
 
 mod app;
 mod commands;
@@ -47,7 +51,7 @@ fn main() -> Result<()> {
                 // Update the state to reflect that and then continue to next frame.
                 mode = AppMode::Running(app::RunMode::EditingEncounter);
                 continue;
-            },
+            }
             AppMode::Running(_run_mode) => {
                 // Check for keypress events.
                 let key_opt = poll_for_keypress().context("Couldn't poll for keypress.")?;
@@ -59,19 +63,18 @@ fn main() -> Result<()> {
                 mode = StateInducer::from(command)(mode);
 
                 // TODO - Other stuff while running.
-            },
+            }
             AppMode::Quitting => {
                 // If our state says we're quitting, we're gonna quit. Break out of
                 // the loop and beginning cleaning up after ourselves.
                 break;
-            },
+            }
         }
-
 
         // Calculate the time elapsed since the last frame.
         let elapsed = Instant::now().duration_since(last_frame_time);
 
-        // Update the last frame time to now (frame `n`), since we have 
+        // Update the last frame time to now (frame `n`), since we have
         //  finished using the frame time of the previous frame (`n-1`).
         last_frame_time = std::time::Instant::now();
 
@@ -103,4 +106,3 @@ fn poll_for_keypress() -> Result<Option<KeyCode>> {
 fn ui(frame: &mut Frame) {
     frame.render_widget(Block::default().title("Hello world!"), frame.size());
 }
-
