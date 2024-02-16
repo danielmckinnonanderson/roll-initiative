@@ -6,9 +6,12 @@ use commands::{AppCommand, StateInducer};
 use crossterm::event::{Event, KeyCode, KeyEventKind};
 use lazy_static::lazy_static;
 use ratatui::{prelude::CrosstermBackend, widgets::Block, Frame, Terminal};
+use ui::splash_screen;
 
 mod app;
 mod commands;
+mod theme;
+mod ui;
 
 pub const FRAMES_PER_SECOND: u64 = 24;
 
@@ -35,14 +38,14 @@ fn main() -> Result<()> {
     let mut last_frame_time = Instant::now();
 
     loop {
-        // Draw the TUI for the current frame
-        terminal.draw(|frame: &mut Frame| {
-            ui(frame);
-        })?;
-
         // Given the current state, check for user interaction
         match mode {
             AppMode::Initializing => {
+                // Draw the TUI for the current frame
+                terminal.draw(|frame: &mut Frame| {
+                    splash_screen(frame);
+                })?;
+
                 // We're inside of our main loop now, so we're done initializing.
                 // Update the state to reflect that and then continue to next frame.
                 mode = AppMode::Running(app::RunMode::EditingEncounter);

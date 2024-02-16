@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialEq)]
-#[derive(Default)]
+use anyhow::Result;
+use ratatui::{prelude::CrosstermBackend, Terminal, Frame};
+
+use crate::ui::splash_screen;
+
+#[derive(Clone, Debug, Default, PartialEq)]
 pub enum AppMode {
     #[default]
     Initializing,
@@ -10,6 +14,28 @@ pub enum AppMode {
 }
 
 impl AppMode {
+    pub fn draw(
+        &self, 
+        app_state: &AppState,
+        terminal: &mut Terminal<CrosstermBackend<std::io::Stderr>>
+    ) -> Result<()> {
+        match self {
+            AppMode::Initializing => {
+                // Draw the TUI for the current frame
+                terminal.draw(|frame: &mut Frame| {
+                    splash_screen(frame);
+                })?;
+            },
+            AppMode::Running(_run_mode) => {
+                
+            }
+            AppMode::Quitting => {
+                // Print goodbye message
+            }
+        }
+
+        Ok(())
+    }
 }
 
 
@@ -32,18 +58,14 @@ pub struct Participant {
     initiative_rolls: [Option<u8>; 8],
 }
 
-impl Participant {
-    pub fn new(
-        name: String,
-        hp_current: u16,
-        hp_max: u16,
-        initiative_rolls: [Option<u8>; 8],
-    ) -> Self {
+impl Default for Participant {
+    fn default() -> Self {
         Participant {
-            name,
-            hp_max,
-            hp_current,
-            initiative_rolls,
+            name: String::new(),
+            hp_max: 0,
+            hp_current: 0,
+            initiative_rolls: [None; 8],
         }
     }
 }
+
