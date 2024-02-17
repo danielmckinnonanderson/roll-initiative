@@ -1,6 +1,6 @@
-use ratatui::{Frame, widgets::{Block, Borders}};
+use ratatui::{Frame, widgets::{Block, Borders, Widget, Padding}, prelude::{Rect, Buffer, Layout}};
 
-use crate::theme::THEME;
+use crate::{theme::THEME, app::AppMode};
 
 pub fn splash_screen(frame: &mut Frame) {
     let theme = THEME.root;

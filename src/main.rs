@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
-use app::AppMode;
+use app::{AppMode, AppState};
 use commands::{AppCommand, StateInducer};
 use crossterm::event::{Event, KeyCode, KeyEventKind};
 use lazy_static::lazy_static;
@@ -38,37 +38,18 @@ fn main() -> Result<()> {
     let mut last_frame_time = Instant::now();
 
     loop {
-        // Given the current state, check for user interaction
-        match mode {
-            AppMode::Initializing => {
-                // Draw the TUI for the current frame
-                terminal.draw(|frame: &mut Frame| {
-                    splash_screen(frame);
-                })?;
-
-                // We're inside of our main loop now, so we're done initializing.
-                // Update the state to reflect that and then continue to next frame.
-                mode = AppMode::Running(app::RunMode::EditingEncounter);
-                continue;
-            }
-            AppMode::Running(_run_mode) => {
-                // Check for keypress events.
-                let key_opt = poll_for_keypress().context("Couldn't poll for keypress.")?;
-
-                // Map keypress to command based on current mode & pressed key.
-                let command: AppCommand = (&mode, key_opt).into();
-
-                // If the pressed key corresponds to a command, run command against state.
-                StateInducer::from(command)((&mut mode, None));
-
-                // TODO - Other stuff while running.
-            }
-            AppMode::Quitting => {
-                // If our state says we're quitting, we're gonna quit. Break out of
-                // the loop and beginning cleaning up after ourselves.
-                break;
-            }
+        // Update the state, or quit if necessary.
+        if let Ok(Some(next_mode)) = mode.next_state() {
+            mode = next_mode;
+        } else {
+            // Break out out the loop if there was an error (since we don't expect to recover from
+            // errors reading user input & such), or if the next state is `None` (which means the
+            // application should quit).
+            break;
         }
+
+        // TODO
+        // mode.draw(&mut terminal)?;
 
         // Calculate the time elapsed since the last frame.
         let elapsed = Instant::now().duration_since(last_frame_time);
@@ -90,17 +71,6 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn poll_for_keypress() -> Result<Option<KeyCode>> {
-    if let Event::Key(key) = crossterm::event::read().context("Could not read event.")? {
-        if key.kind == KeyEventKind::Press {
-            Ok(Some(key.code))
-        } else {
-            Ok(None)
-        }
-    } else {
-        Ok(None)
-    }
-}
 
 fn ui(frame: &mut Frame) {
     frame.render_widget(Block::default().title("Hello world!"), frame.size());

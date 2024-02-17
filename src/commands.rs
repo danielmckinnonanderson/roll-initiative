@@ -1,6 +1,6 @@
 use crossterm::event::KeyCode;
 
-use crate::app::{AppMode, RunMode, AppState};
+use crate::app::{AppMode, RunMode};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AppCommand {
@@ -9,7 +9,7 @@ pub enum AppCommand {
 }
 
 /// Given the current AppState, induce action and return the resulting AppState.
-pub type StateInducer = fn((&mut AppMode, Option<&mut AppState>));
+pub type StateInducer = fn(&AppMode) -> AppMode;
 
 /// This block is the key mappings for the various 'modes' of the app.
 #[rustfmt::skip]
@@ -17,10 +17,10 @@ impl From<(&AppMode, Option<KeyCode>)> for AppCommand {
     fn from(value: (&AppMode, Option<KeyCode>)) -> Self {
         value.1.map(|key| match value.0 {
                 // There are no commands in the initializing or quitting states
-                AppMode::Initializing | AppMode::Quitting => AppCommand::NoOp,
+                AppMode::Initializing(_) | AppMode::Quitting => AppCommand::NoOp,
 
                 AppMode::Running(run_mode) => match run_mode {
-                    RunMode::EditingEncounter => match key {
+                    RunMode::EditingEncounter(_participants) => match key {
                         // Vim & arrow key movement
                         | KeyCode::Char('j') 
                         | KeyCode::Down => AppCommand::NoOp,
@@ -60,13 +60,15 @@ impl From<AppCommand> for StateInducer {
     fn from(value: AppCommand) -> Self {
         match value {
             AppCommand::Quit => {
-                |value: (&mut AppMode, Option<&mut AppState>)| {
-                    *value.0 = AppMode::Quitting;
+                |_state: &AppMode| {
+                    AppMode::Quitting
                 }
-            }
+            },
             AppCommand::NoOp => {
                 // Do nothing
-                |_value: (&mut AppMode, Option<&mut AppState>)| {}
+                |state: &AppMode| {
+                    state.clone()
+                }
             }
         }
     }

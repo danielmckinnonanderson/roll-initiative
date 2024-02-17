@@ -19,7 +19,7 @@ pub struct Theme {
     pub description: Style,
     pub description_title: Style,
     pub edit_participants_tab: EditParticipantsTabTheme,
-    pub running_combat_tab: RunningCombatTabTheme,
+    // pub running_combat_tab: RunningCombatTabTheme,
 }
 
 pub struct EditParticipantsTabTheme {
@@ -28,6 +28,8 @@ pub struct EditParticipantsTabTheme {
     pub participant_focused: Style,
 }
 
+// TODO - Come back to this after edit participants tab works 
+#[allow(dead_code)]
 pub struct RunningCombatTabTheme {
     pub root: Style,
     pub participant: Style,
@@ -49,11 +51,11 @@ pub const THEME: Theme = {
             participant: Style::new(),
             participant_focused: Style::new().fg(LIGHT_PURPLE),
         },
-        running_combat_tab: RunningCombatTabTheme {
-            root: Style::new(),
-            participant: Style::new(),
-            participant_focused: Style::new(),
-        }
+        // running_combat_tab: RunningCombatTabTheme {
+        //     root: Style::new(),
+        //     participant: Style::new(),
+        //     participant_focused: Style::new(),
+        // }
     }
 };
 
