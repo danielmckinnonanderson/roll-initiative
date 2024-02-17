@@ -1,14 +1,17 @@
+use std::str::FromStr;
+
 use anyhow::{Result, Context};
 use crossterm::event::{KeyCode, KeyEventKind, Event};
+use ratatui::{prelude::Backend, text::Text, style::{Style, Color}};
 
-use crate::{FRAMES_PER_SECOND, commands::{AppCommand, StateInducer}};
+use crate::{FRAMES_PER_SECOND, commands::{AppCommand, StateInducer}, ui::splash_screen};
 
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AppMode {
     Initializing(InitializeState),
     Running(RunMode),
-    Quitting,
+    Quitting(QuittingState),
 }
 
 impl Default for AppMode {
@@ -26,6 +29,19 @@ impl Default for InitializeState {
     fn default() -> Self {
         InitializeState {
             splash_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct QuittingState {
+    pub quitting_screen_frames_remaining: u32,
+}
+
+impl Default for QuittingState {
+    fn default() -> Self {
+        QuittingState {
+            quitting_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32,
         }
     }
 }
@@ -64,10 +80,45 @@ impl AppMode {
                 // // TODO - Other stuff while running.
                 Ok(Some(next))
             },
-            AppMode::Quitting => {
+            AppMode::Quitting(quitting_state) => {
                 // If our state says we're quitting, we're gonna quit. Break out of
                 // the outer loop and beginning cleaning up after ourselves.
-                Ok(None)
+                if quitting_state.quitting_screen_frames_remaining != 0 {
+                    Ok(Some(AppMode::Quitting(QuittingState {
+                        quitting_screen_frames_remaining: quitting_state.quitting_screen_frames_remaining - 1,
+                    })))
+                } else {
+                    Ok(None)
+                }
+            },
+        }
+    }
+
+    pub fn draw(&self, terminal: &mut crate::Terminal<impl Backend>) -> Result<()> {
+        match self {
+            AppMode::Initializing(_state) => {
+                terminal.draw(|frame| {
+                    splash_screen(frame);
+                })?;
+
+                Ok(())
+            },
+            AppMode::Running(_run_mode) => {
+                Ok(())
+            },
+            AppMode::Quitting(_quitting_state) => {
+                terminal.draw(|frame| {
+                    let style = Style::default()
+                        .fg(Color::LightMagenta)
+                        .bg(Color::Black);
+
+                    frame.render_widget(
+                        Text::styled("Bye for now!", style),
+                        frame.size()
+                    );
+                })?;
+
+                Ok(())
             }
         }
     }
@@ -109,12 +160,23 @@ pub struct Participant {
     initiative_rolls: [Option<u8>; 4],
 }
 
-impl Default for Participant {
-    fn default() -> Self {
+impl Participant {
+    pub fn new(name: &str) -> Self {
         Participant {
-            name: String::new(),
+            name: String::from(name),
             initiative_rolls: [None; 4],
         }
+    }
+}
+
+impl FromStr for Participant {
+    type Err = ();
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(Participant {
+            name: s.to_string(),
+            initiative_rolls: [None; 4],
+        })
     }
 }
 
@@ -155,6 +217,14 @@ pub fn participants_to_ordered_combat_turns(participants: Vec<Participant>) -> V
 
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_participant_constructor() {
+        let result = Participant::new("Goku");
+
+        assert_eq!(result.name, "Goku");
+        assert_eq!(result.initiative_rolls, [None; 4]);
+    }
 
     #[test]
     fn test_single_participant_to_combat_turns() {
@@ -208,8 +278,7 @@ mod tests {
             unconscious: false,
             dead: false
         });
-        assert_eq!(result[1], CombatTurn {
-            name: "Balrog".to_string(),
+        assert_eq!(result[1], CombatTurn { name: "Balrog".to_string(),
             initiative_roll_value: 22,
             unconscious: false,
             dead: false
@@ -238,6 +307,64 @@ mod tests {
             unconscious: false,
             dead: false
         });
+    }
+
+    #[test]
+    fn test_app_mode_initial_state() {
+        let app = AppMode::default();
+
+        let result = app.next_state().unwrap();
+
+        assert_eq!(result, Some(AppMode::Initializing(InitializeState {
+            splash_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32 - 1,
+        })));
+    }
+
+    #[test]
+    fn test_app_mode_initial_state_to_running() {
+        let app = AppMode::Initializing(InitializeState {
+            splash_screen_frames_remaining: 0,
+        });
+
+        let result = app.next_state().unwrap();
+
+        assert_eq!(result, Some(AppMode::Running(RunMode::EditingEncounter(vec![]))));
+    }
+
+    #[test]
+    fn test_app_mode_running_state_decrements_per_frame() {
+        let app = AppMode::Quitting(QuittingState {
+            quitting_screen_frames_remaining: 1,
+        });
+
+        let result = app.next_state().unwrap();
+
+        assert_eq!(result, Some(AppMode::Quitting(QuittingState {
+            quitting_screen_frames_remaining: 0,
+        })));
+    }
+
+    #[test]
+    fn test_app_mode_quitting_state_to_none() {
+        let app = AppMode::Quitting(QuittingState {
+            quitting_screen_frames_remaining: 0,
+        });
+
+        let result = app.next_state().unwrap();
+
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_quitting_command_induce_state_change() {
+        let app = AppMode::Running(RunMode::EditingEncounter(vec![]));
+
+        let func = StateInducer::from(AppCommand::Quit);
+        let result = func(&app);
+
+        assert_eq!(result, AppMode::Quitting(QuittingState {
+            quitting_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32,
+        }));
     }
 }
 

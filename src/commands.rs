@@ -1,6 +1,6 @@
 use crossterm::event::KeyCode;
 
-use crate::app::{AppMode, RunMode};
+use crate::app::{AppMode, RunMode, QuittingState};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AppCommand {
@@ -17,7 +17,7 @@ impl From<(&AppMode, Option<KeyCode>)> for AppCommand {
     fn from(value: (&AppMode, Option<KeyCode>)) -> Self {
         value.1.map(|key| match value.0 {
                 // There are no commands in the initializing or quitting states
-                AppMode::Initializing(_) | AppMode::Quitting => AppCommand::NoOp,
+                AppMode::Initializing(_) | AppMode::Quitting(_) => AppCommand::NoOp,
 
                 AppMode::Running(run_mode) => match run_mode {
                     RunMode::EditingEncounter(_participants) => match key {
@@ -60,8 +60,13 @@ impl From<AppCommand> for StateInducer {
     fn from(value: AppCommand) -> Self {
         match value {
             AppCommand::Quit => {
-                |_state: &AppMode| {
-                    AppMode::Quitting
+                |state: &AppMode| {
+                    match state {
+                        AppMode::Quitting(quitting_state) => {
+                            AppMode::Quitting(quitting_state.clone())
+                        },
+                        _ => AppMode::Quitting(QuittingState::default())
+                    }
                 }
             },
             AppCommand::NoOp => {
