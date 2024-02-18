@@ -36,8 +36,8 @@ fn main() -> Result<()> {
 
     loop {
         // Update the state, or quit if necessary.
-        if let Ok(Some(next_mode)) = mode.next_state() {
-            mode = next_mode;
+        if let Ok(Some(next_state)) = mode.next_state() {
+            mode = next_state;
         } else {
             // Break out of the loop if there was an error (since we don't expect to recover from
             // errors reading user input & such), or if the next state is `None` (which means the

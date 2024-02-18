@@ -64,7 +64,10 @@ impl AppMode {
                     // We're done initializing, move to the next state.
                     // (For now, we're just going to move to the next state, but in the future
                     // we might want to do some cleanup here.)
-                    Ok(Some(AppMode::Running(RunMode::EditingEncounter(vec![]))))
+                    Ok(Some(AppMode::Running(
+                        RunMode::EditingEncounter(
+                            EditingEncounterState::default()))
+                    ))
                 }
             },
             AppMode::Running(_run_mode) => {
@@ -138,7 +141,22 @@ fn poll_for_keypress() -> Result<Option<KeyCode>> {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum RunMode {
-    EditingEncounter(Vec<Participant>),
+    EditingEncounter(EditingEncounterState),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct EditingEncounterState {
+    pub participants: Vec<Participant>,
+    pub focused_row: Option<usize>,
+}
+
+impl Default for EditingEncounterState {
+    fn default() -> Self {
+        EditingEncounterState {
+            participants: vec![],
+            focused_row: None,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -328,7 +346,14 @@ mod tests {
 
         let result = app.next_state().unwrap();
 
-        assert_eq!(result, Some(AppMode::Running(RunMode::EditingEncounter(vec![]))));
+        assert_eq!(result, Some(
+            AppMode::Running(
+                RunMode::EditingEncounter(EditingEncounterState {
+                    participants: vec![],
+                    focused_row: None,
+                })
+            )
+        ));
     }
 
     #[test]
@@ -357,7 +382,7 @@ mod tests {
 
     #[test]
     fn test_quitting_command_induce_state_change() {
-        let app = AppMode::Running(RunMode::EditingEncounter(vec![]));
+        let app = AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
 
         let func = StateInducer::from(AppCommand::Quit);
         let result = func(&app);

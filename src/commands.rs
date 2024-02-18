@@ -78,3 +78,4 @@ impl From<AppCommand> for StateInducer {
         }
     }
 }
+
