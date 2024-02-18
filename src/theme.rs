@@ -57,7 +57,7 @@ pub struct ControlsPanelTheme {
     pub bg: Style,
     pub text: Style,
     pub delimiter: Style,
-    pub border_color: Color
+    pub border_color: Color,
 }
 
 pub struct EditParticipantsTabTheme {
@@ -83,7 +83,9 @@ pub const THEME: Theme = {
         app_title: Style::new().fg(colors::TEXT_TITLE),
 
         tabs: Style::new().fg(colors::TEXT_BODY_SUBTLE),
-        tab_selected: Style::new().fg(colors::TEXT_IMPORTANT).bg(colors::BG_DARKISH),
+        tab_selected: Style::new()
+            .fg(colors::TEXT_IMPORTANT)
+            .bg(colors::BG_DARKISH),
 
         controls_panel: ControlsPanelTheme {
             bg: Style::new().fg(colors::TEXT_BODY).bg(colors::BG_DARKISH),
@@ -93,11 +95,17 @@ pub const THEME: Theme = {
         },
         edit_participants_tab: EditParticipantsTabTheme {
             root: Style::new().fg(colors::TEXT_BODY),
-            column_heading: Style::new().fg(colors::TEXT_HEADING).bg(colors::BG_DARK_IMPORTANT),
+            column_heading: Style::new()
+                .fg(colors::TEXT_HEADING)
+                .bg(colors::BG_DARK_IMPORTANT),
             participant_row: Style::new().fg(colors::TEXT_BODY),
             participant_row_alt: Style::new().fg(colors::TEXT_IMPORTANT),
-            participant_row_focused: Style::new().fg(colors::TEXT_BODY_LIGHT).bg(colors::BG_LIGHT),
-            participant_col_focused: Style::new().fg(colors::TEXT_IMPORTANT_LIGHT).bg(colors::BG_LIGHTEST),
+            participant_row_focused: Style::new()
+                .fg(colors::TEXT_BODY_LIGHT)
+                .bg(colors::BG_LIGHT),
+            participant_col_focused: Style::new()
+                .fg(colors::TEXT_IMPORTANT_LIGHT)
+                .bg(colors::BG_LIGHTEST),
         },
     }
 };

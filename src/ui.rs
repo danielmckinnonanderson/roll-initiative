@@ -1,18 +1,28 @@
 use ratatui::{
-    prelude::{Buffer, Layout, Rect, Direction, Constraint},
+    prelude::{Buffer, Constraint, Direction, Layout, Rect},
     widgets::{Block, Borders, Padding, Widget},
     Frame,
 };
 
-use crate::{app::{AppMode, EditingEncounterState}, theme::THEME};
+use crate::{
+    app::{AppMode, EditingEncounterState},
+    theme::THEME,
+};
 
 pub mod elements {
-    use ratatui::{widgets::{Paragraph, BorderType}, text::Line, style::{Style, Color}};
+    use ratatui::{
+        style::{Color, Style},
+        text::Line,
+        widgets::{BorderType, Paragraph},
+    };
 
-    use crate::{theme, app::{AppState, RunMode}};
+    use crate::{
+        app::{AppState, RunMode},
+        theme,
+    };
 
     use super::*;
-    
+
     pub const EDITING_PARTICIPANTS_CONTROLS_TEXT: &str = "[a] Add | [d (or) Del.] Delete 
         | [e (or) Enter] Toggle editing 
         | [q] Quit | [tab] Change tab | [↑ (or) k] Prev. row 
@@ -48,7 +58,7 @@ pub mod elements {
 
         let controls_text = match run_mode {
             RunMode::EditingEncounter(_) => EDITING_PARTICIPANTS_CONTROLS_TEXT,
-            _ => ""
+            _ => "",
         };
 
         let panel = Paragraph::new(Line::from(controls_text))
@@ -87,4 +97,3 @@ pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
         ])
         .split(popup_layout[1])[1] // Return the middle chunk
 }
-

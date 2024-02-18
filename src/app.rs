@@ -9,8 +9,8 @@ use ratatui::{
 
 use crate::{
     commands::{AppCommand, StateInducer},
-    ui::elements,
     theme::THEME,
+    ui::elements,
     FRAMES_PER_SECOND,
 };
 
@@ -95,7 +95,8 @@ impl AppMode {
                 if quitting_state.quitting_screen_frames_remaining != 0 {
                     Ok(Some(AppMode::Quitting(QuittingState {
                         quitting_screen_frames_remaining: quitting_state
-                            .quitting_screen_frames_remaining - 1,
+                            .quitting_screen_frames_remaining
+                            - 1,
                     })))
                 } else {
                     Ok(None)
@@ -117,23 +118,22 @@ impl AppMode {
                 match run_mode {
                     RunMode::EditingEncounter(_state) => {
                         terminal.draw(|frame| {
-                            let rects = Layout::vertical(
-                                [Constraint::Min(5), Constraint::Length(3)]
-                            ).split(frame.size());
+                            let rects =
+                                Layout::vertical([Constraint::Min(5), Constraint::Length(3)])
+                                    .split(frame.size());
 
-                            elements::controls_panel(frame, run_mode, rects[1], );
+                            elements::controls_panel(frame, run_mode, rects[1]);
                         })?;
 
                         Ok(())
-                    }
-                    // RunMode::RunningCombat(_running_combat_state) => {
-                    //     terminal.draw(|frame| {
-                    //         let style = THEME.root;
+                    } // RunMode::RunningCombat(_running_combat_state) => {
+                      //     terminal.draw(|frame| {
+                      //         let style = THEME.root;
 
-                    //         frame.render_widget(Text::styled("Running Combat", style), frame.size());
-                    //     })?;
-                    //     Ok(())
-                    // }
+                      //         frame.render_widget(Text::styled("Running Combat", style), frame.size());
+                      //     })?;
+                      //     Ok(())
+                      // }
                 }
             }
 

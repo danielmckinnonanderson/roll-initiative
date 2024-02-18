@@ -77,7 +77,8 @@ mod test {
 
     #[test]
     fn test_app_command_from() {
-        let app_mode = AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
+        let app_mode =
+            AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
         let key = Some(KeyCode::Char('q'));
         let app_command = AppCommand::from((&app_mode, key));
         assert_eq!(app_command, AppCommand::Quit);
@@ -85,7 +86,8 @@ mod test {
 
     #[test]
     fn test_app_command_from_none() {
-        let app_mode = AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
+        let app_mode =
+            AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
         let key = None;
         let app_command = AppCommand::from((&app_mode, key));
         assert_eq!(app_command, AppCommand::NoOp);
@@ -95,7 +97,8 @@ mod test {
     fn test_state_inducer_from() {
         let app_command = AppCommand::Quit;
         let state_inducer = StateInducer::from(app_command);
-        let app_mode = AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
+        let app_mode =
+            AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
         let new_app_mode = state_inducer(&app_mode);
         assert_eq!(new_app_mode, AppMode::Quitting(QuittingState::default()));
     }
@@ -104,7 +107,8 @@ mod test {
     fn test_noop_induces_no_change() {
         let app_command = AppCommand::NoOp;
         let state_inducer = StateInducer::from(app_command);
-        let app_mode = AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
+        let app_mode =
+            AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
         let new_app_mode = state_inducer(&app_mode);
         assert_eq!(new_app_mode, app_mode);
     }
@@ -113,9 +117,9 @@ mod test {
     fn test_quit_induces_quitting() {
         let app_command = AppCommand::Quit;
         let state_inducer = StateInducer::from(app_command);
-        let app_mode = AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
+        let app_mode =
+            AppMode::Running(RunMode::EditingEncounter(EditingEncounterState::default()));
         let new_app_mode = state_inducer(&app_mode);
         assert_eq!(new_app_mode, AppMode::Quitting(QuittingState::default()));
     }
 }
-
