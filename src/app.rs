@@ -3,14 +3,14 @@ use std::str::FromStr;
 use anyhow::{Context, Result};
 use crossterm::event::{Event, KeyCode, KeyEventKind};
 use ratatui::{
-    prelude::Backend,
-    style::{Color, Style},
+    prelude::{Backend, Constraint, Layout},
     text::Text,
 };
 
 use crate::{
     commands::{AppCommand, StateInducer},
-    ui::splash_screen,
+    ui::elements,
+    theme::THEME,
     FRAMES_PER_SECOND,
 };
 
@@ -35,7 +35,7 @@ pub struct InitializeState {
 impl Default for InitializeState {
     fn default() -> Self {
         InitializeState {
-            splash_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32,
+            splash_screen_frames_remaining: (FRAMES_PER_SECOND * 1) as u32,
         }
     }
 }
@@ -48,7 +48,7 @@ pub struct QuittingState {
 impl Default for QuittingState {
     fn default() -> Self {
         QuittingState {
-            quitting_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32,
+            quitting_screen_frames_remaining: (FRAMES_PER_SECOND * 1) as u32,
         }
     }
 }
@@ -108,15 +108,38 @@ impl AppMode {
         match self {
             AppMode::Initializing(_state) => {
                 terminal.draw(|frame| {
-                    splash_screen(frame);
+                    elements::splash_screen(frame);
                 })?;
 
                 Ok(())
             }
-            AppMode::Running(_run_mode) => Ok(()),
+            AppMode::Running(run_mode) => {
+                match run_mode {
+                    RunMode::EditingEncounter(_state) => {
+                        terminal.draw(|frame| {
+                            let rects = Layout::vertical(
+                                [Constraint::Min(5), Constraint::Length(3)]
+                            ).split(frame.size());
+
+                            elements::controls_panel(frame, run_mode, rects[1], );
+                        })?;
+
+                        Ok(())
+                    }
+                    // RunMode::RunningCombat(_running_combat_state) => {
+                    //     terminal.draw(|frame| {
+                    //         let style = THEME.root;
+
+                    //         frame.render_widget(Text::styled("Running Combat", style), frame.size());
+                    //     })?;
+                    //     Ok(())
+                    // }
+                }
+            }
+
             AppMode::Quitting(_quitting_state) => {
                 terminal.draw(|frame| {
-                    let style = Style::default().fg(Color::LightMagenta).bg(Color::Black);
+                    let style = THEME.root;
 
                     frame.render_widget(Text::styled("Bye for now!", style), frame.size());
                 })?;
