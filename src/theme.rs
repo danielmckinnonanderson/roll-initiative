@@ -1,4 +1,4 @@
-use ratatui::style::{Style, Color};
+use ratatui::style::{Color, Style};
 
 // Palette
 pub const BLACK: Color = Color::Rgb(0, 0, 0);
@@ -7,7 +7,6 @@ pub const WHITE: Color = Color::Rgb(255, 255, 255);
 
 pub const LIGHT_PURPLE: Color = Color::Rgb(255, 0, 255);
 pub const DEEP_PURPLE: Color = Color::Rgb(128, 0, 128);
-
 
 pub struct Theme {
     pub root: Style,
@@ -28,7 +27,7 @@ pub struct EditParticipantsTabTheme {
     pub participant_focused: Style,
 }
 
-// TODO - Come back to this after edit participants tab works 
+// TODO - Come back to this after edit participants tab works
 #[allow(dead_code)]
 pub struct RunningCombatTabTheme {
     pub root: Style,
@@ -58,4 +57,3 @@ pub const THEME: Theme = {
         // }
     }
 };
-

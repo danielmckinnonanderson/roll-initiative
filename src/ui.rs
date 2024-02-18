@@ -1,6 +1,10 @@
-use ratatui::{Frame, widgets::{Block, Borders, Widget, Padding}, prelude::{Rect, Buffer, Layout}};
+use ratatui::{
+    prelude::{Buffer, Layout, Rect},
+    widgets::{Block, Borders, Padding, Widget},
+    Frame,
+};
 
-use crate::{theme::THEME, app::AppMode};
+use crate::{app::AppMode, theme::THEME};
 
 pub fn splash_screen(frame: &mut Frame) {
     let theme = THEME.root;
@@ -13,4 +17,3 @@ pub fn splash_screen(frame: &mut Frame) {
 
     frame.render_widget(splash, frame.size());
 }
-

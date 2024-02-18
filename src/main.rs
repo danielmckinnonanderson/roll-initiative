@@ -3,7 +3,12 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, Result};
 use app::AppMode;
 use lazy_static::lazy_static;
-use ratatui::{prelude::CrosstermBackend, widgets::Block, Frame, Terminal, text::{Text, Span}};
+use ratatui::{
+    prelude::CrosstermBackend,
+    text::{Span, Text},
+    widgets::Block,
+    Frame, Terminal,
+};
 
 mod app;
 mod commands;
@@ -68,4 +73,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-

@@ -1,11 +1,18 @@
 use std::str::FromStr;
 
-use anyhow::{Result, Context};
-use crossterm::event::{KeyCode, KeyEventKind, Event};
-use ratatui::{prelude::Backend, text::Text, style::{Style, Color}};
+use anyhow::{Context, Result};
+use crossterm::event::{Event, KeyCode, KeyEventKind};
+use ratatui::{
+    prelude::Backend,
+    style::{Color, Style},
+    text::Text,
+};
 
-use crate::{FRAMES_PER_SECOND, commands::{AppCommand, StateInducer}, ui::splash_screen};
-
+use crate::{
+    commands::{AppCommand, StateInducer},
+    ui::splash_screen,
+    FRAMES_PER_SECOND,
+};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AppMode {
@@ -64,12 +71,11 @@ impl AppMode {
                     // We're done initializing, move to the next state.
                     // (For now, we're just going to move to the next state, but in the future
                     // we might want to do some cleanup here.)
-                    Ok(Some(AppMode::Running(
-                        RunMode::EditingEncounter(
-                            EditingEncounterState::default()))
-                    ))
+                    Ok(Some(AppMode::Running(RunMode::EditingEncounter(
+                        EditingEncounterState::default(),
+                    ))))
                 }
-            },
+            }
             AppMode::Running(_run_mode) => {
                 // Check for keypress events.
                 let key_opt = poll_for_keypress().context("Couldn't poll for keypress.")?;
@@ -82,18 +88,19 @@ impl AppMode {
 
                 // // TODO - Other stuff while running.
                 Ok(Some(next))
-            },
+            }
             AppMode::Quitting(quitting_state) => {
                 // If our state says we're quitting, we're gonna quit. Break out of
                 // the outer loop and beginning cleaning up after ourselves.
                 if quitting_state.quitting_screen_frames_remaining != 0 {
                     Ok(Some(AppMode::Quitting(QuittingState {
-                        quitting_screen_frames_remaining: quitting_state.quitting_screen_frames_remaining - 1,
+                        quitting_screen_frames_remaining: quitting_state
+                            .quitting_screen_frames_remaining - 1,
                     })))
                 } else {
                     Ok(None)
                 }
-            },
+            }
         }
     }
 
@@ -105,20 +112,13 @@ impl AppMode {
                 })?;
 
                 Ok(())
-            },
-            AppMode::Running(_run_mode) => {
-                Ok(())
-            },
+            }
+            AppMode::Running(_run_mode) => Ok(()),
             AppMode::Quitting(_quitting_state) => {
                 terminal.draw(|frame| {
-                    let style = Style::default()
-                        .fg(Color::LightMagenta)
-                        .bg(Color::Black);
+                    let style = Style::default().fg(Color::LightMagenta).bg(Color::Black);
 
-                    frame.render_widget(
-                        Text::styled("Bye for now!", style),
-                        frame.size()
-                    );
+                    frame.render_widget(Text::styled("Bye for now!", style), frame.size());
                 })?;
 
                 Ok(())
@@ -222,11 +222,14 @@ impl From<Participant> for Vec<CombatTurn> {
 }
 
 pub fn participants_to_ordered_combat_turns(participants: Vec<Participant>) -> Vec<CombatTurn> {
-    let mut result = participants.into_iter().fold(Vec::new(), |mut acc: Vec<CombatTurn>, p: Participant| {
-        let turns: Vec<CombatTurn> = p.into();
-        acc.extend(turns);
-        acc
-    });
+    let mut result =
+        participants
+            .into_iter()
+            .fold(Vec::new(), |mut acc: Vec<CombatTurn>, p: Participant| {
+                let turns: Vec<CombatTurn> = p.into();
+                acc.extend(turns);
+                acc
+            });
 
     result.sort_by(|a, b| b.initiative_roll_value.cmp(&a.initiative_roll_value));
 
@@ -290,41 +293,60 @@ mod tests {
 
         assert_eq!(result.len(), 6);
 
-        assert_eq!(result[0], CombatTurn {
-            name: "Balrog".to_string(),
-            initiative_roll_value: 25,
-            unconscious: false,
-            dead: false
-        });
-        assert_eq!(result[1], CombatTurn { name: "Balrog".to_string(),
-            initiative_roll_value: 22,
-            unconscious: false,
-            dead: false
-        });
-        assert_eq!(result[2], CombatTurn {
-            name: "Gandalf".to_string(),
-            initiative_roll_value: 20,
-            unconscious: false,
-            dead: false
-        });
-        assert_eq!(result[3], CombatTurn {
-            name: "Gandalf".to_string(),
-            initiative_roll_value: 17,
-            unconscious: false,
-            dead: false
-        });
-        assert_eq!(result[4], CombatTurn {
-            name: "Legolas".to_string(),
-            initiative_roll_value: 15,
-            unconscious: false,
-            dead: false
-        });
-        assert_eq!(result[5], CombatTurn {
-            name: "Gimli".to_string(),
-            initiative_roll_value: 7,
-            unconscious: false,
-            dead: false
-        });
+        assert_eq!(
+            result[0],
+            CombatTurn {
+                name: "Balrog".to_string(),
+                initiative_roll_value: 25,
+                unconscious: false,
+                dead: false
+            }
+        );
+        assert_eq!(
+            result[1],
+            CombatTurn {
+                name: "Balrog".to_string(),
+                initiative_roll_value: 22,
+                unconscious: false,
+                dead: false
+            }
+        );
+        assert_eq!(
+            result[2],
+            CombatTurn {
+                name: "Gandalf".to_string(),
+                initiative_roll_value: 20,
+                unconscious: false,
+                dead: false
+            }
+        );
+        assert_eq!(
+            result[3],
+            CombatTurn {
+                name: "Gandalf".to_string(),
+                initiative_roll_value: 17,
+                unconscious: false,
+                dead: false
+            }
+        );
+        assert_eq!(
+            result[4],
+            CombatTurn {
+                name: "Legolas".to_string(),
+                initiative_roll_value: 15,
+                unconscious: false,
+                dead: false
+            }
+        );
+        assert_eq!(
+            result[5],
+            CombatTurn {
+                name: "Gimli".to_string(),
+                initiative_roll_value: 7,
+                unconscious: false,
+                dead: false
+            }
+        );
     }
 
     #[test]
@@ -333,9 +355,12 @@ mod tests {
 
         let result = app.next_state().unwrap();
 
-        assert_eq!(result, Some(AppMode::Initializing(InitializeState {
-            splash_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32 - 1,
-        })));
+        assert_eq!(
+            result,
+            Some(AppMode::Initializing(InitializeState {
+                splash_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32 - 1,
+            }))
+        );
     }
 
     #[test]
@@ -346,14 +371,15 @@ mod tests {
 
         let result = app.next_state().unwrap();
 
-        assert_eq!(result, Some(
-            AppMode::Running(
-                RunMode::EditingEncounter(EditingEncounterState {
+        assert_eq!(
+            result,
+            Some(AppMode::Running(RunMode::EditingEncounter(
+                EditingEncounterState {
                     participants: vec![],
                     focused_row: None,
-                })
-            )
-        ));
+                }
+            )))
+        );
     }
 
     #[test]
@@ -364,9 +390,12 @@ mod tests {
 
         let result = app.next_state().unwrap();
 
-        assert_eq!(result, Some(AppMode::Quitting(QuittingState {
-            quitting_screen_frames_remaining: 0,
-        })));
+        assert_eq!(
+            result,
+            Some(AppMode::Quitting(QuittingState {
+                quitting_screen_frames_remaining: 0,
+            }))
+        );
     }
 
     #[test]
@@ -387,9 +416,11 @@ mod tests {
         let func = StateInducer::from(AppCommand::Quit);
         let result = func(&app);
 
-        assert_eq!(result, AppMode::Quitting(QuittingState {
-            quitting_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32,
-        }));
+        assert_eq!(
+            result,
+            AppMode::Quitting(QuittingState {
+                quitting_screen_frames_remaining: (FRAMES_PER_SECOND * 2) as u32,
+            })
+        );
     }
 }
-
