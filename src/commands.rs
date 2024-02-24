@@ -1,3 +1,6 @@
+use core::fmt;
+use std::fmt::{Display, Formatter};
+
 use crossterm::event::KeyCode;
 
 use crate::app::{AppMode, QuittingState, RunMode};
@@ -7,6 +10,18 @@ pub enum AppCommand {
     Quit,
     NoOp,
 }
+
+/// This block determines how commands are presented in words.
+/// Used in the help text for the key bindings.
+impl Display for AppCommand {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            AppCommand::Quit => write!(f, "Quit"),
+            AppCommand::NoOp => Ok(()),
+        }
+    }
+}
+
 
 /// Given the current AppState, induce action and return the resulting AppState.
 pub type StateInducer = fn(&AppMode) -> AppMode;

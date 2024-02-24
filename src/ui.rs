@@ -23,6 +23,9 @@ pub mod elements {
 
     use super::*;
 
+    // TODO - Instead of hard-coding this text, source it from a combination of
+    //        the display trait for AppCommand & the keybindings (implementation of
+    //        the From trait for the tuple (AppMode, Option<KeyCode>)).
     pub const EDITING_PARTICIPANTS_CONTROLS_TEXT: &str = "[a] Add | [d (or) Del.] Delete 
         | [e (or) Enter] Toggle editing 
         | [q] Quit | [tab] Change tab | [↑ (or) k] Prev. row 
